@@ -60,4 +60,6 @@ _processor_job_status_update () {
         "${proc_job_status[metadata]}" > "$STATE_DIR/processor/job/$request_id/status.json"
 }
 
-. "./_functions.sh"
+# Run main program handler
+scriptdir="$(dirname "${BASH_SOURCE[0]}")"
+. "$scriptdir/_main.sh"

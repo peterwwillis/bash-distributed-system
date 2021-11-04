@@ -1,9 +1,20 @@
 #!/usr/bin/env bash
 
+### Description: Send a scheduler/jobs/new request to the scheduler backend.
+### Usage: POST /scheduler/jobs/new
+###        Content-Type: application/json
+###        <payload should be a JSON document>
 _cgi_scheduler_jobs_new () {
     __content_type_required "application/json"
+    set +e
+    output="$($BACKEND_PATH -j - ${PATH_INFO//\// })"
+    if [ $? -ne 0 ] ; then
+        __httperror 400 "The backend application failed to process your request"
+    fi
+    set -e
     __content_type "application/json"
-    $BACKEND_PATH -j - ${PATH_INFO//\// }
+    printf "\n"
+    printf "%s\n" "$output"
 }
 
 . ./cgi-svc-wrapper

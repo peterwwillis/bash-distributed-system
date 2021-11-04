@@ -57,12 +57,17 @@ __content_type_required () {
 }
 __content_type () {
     local content_type="${1:-$DEFAULT_CONTENT_TYPE}"
-    printf "Content-Type: $content_type\n\n"
+    printf "Content-Type: $content_type\n"
+}
+__httpstatus () {
+    local error_code="$1" error_msg="$2"
+    printf "Status: $error_code $error_msg\n"
 }
 __httperror () {
     local error_code="$1" error_msg="$2"
-    printf "Status: $error_code $error_msg\n"
+    __httpstatus "$error_code" "$error_msg"
     __content_type
+    printf "\n"
     echo "Error $error_code: $error_msg"
     exit 0
 }

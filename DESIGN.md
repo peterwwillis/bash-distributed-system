@@ -92,21 +92,21 @@ SAMPLE OPERATION SCRIPT:
    - POST /scheduler/jobs/new
      - Post data: '{"commands": [ "command": [ "curl", "https://www.google.com/" ] ] }'
      - Post data: 'command=curl "https://www.google.com/"'
-     - The new job request is added to the incoming stack in the scheduler.
+     - The new job request is added to the job queue in the scheduler.
 
- - The scheduler adds a request to its incoming stack
+ - The scheduler adds a request to its job queue
    - receives post data from above
-   - adds job to internal state incoming stack
+   - adds job to internal state job queue stack
      - scheduler.sh new job
        - make new request id 123456789
-       - echo "$request_data" > state/incoming/123456789.job
+       - echo "$request_data" > state/scheduler/queue/123456789.job
    - Returned data: '{"request_id": "123456789"}'
 
  - In the background, the scheduler polls for new requests to schedule
-    - scheduler locks internal state (for incoming stack table)
-    - scheduler lists internal state for incoming stack request IDs
+    - scheduler locks internal state (for job queue table)
+    - scheduler lists internal state for job queue request IDs
 
-    - for each incoming request ID,
+    - for each job queue request ID,
       - scheduler finds a node to place the job on
         - GET /scheduler/nodes/available
           - This will probably need some filter parameters in the future.

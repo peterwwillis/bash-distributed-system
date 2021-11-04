@@ -7,7 +7,7 @@ set -e -u -x
 ### 
 ### Steps:
 ###  1. Create a new Request ID
-###  2. Add the request data to the incoming stack in the scheduler state
+###  2. Add the request data to the job queue in the scheduler state
 ###  3. Return the new request ID
 _scheduler_jobs_new () {
     local request_id
@@ -15,26 +15,34 @@ _scheduler_jobs_new () {
         __error "Need JSON file data for _scheduler_jobs_new"
     fi
 
-    __load_json_to_aa json_data "$JSON_FILE_DATA"
-    request_id="$(md5sum <<< "$JSON_FILE_DATA" | awk '{print $1}')"
-    __state_save "$PROGRAM" incoming "$request_id.job" <<< "$JSON_FILE_DATA"
+    declare -A json_data
+    __load_json_to_aa "$JSON_FILE_DATA" json_data
+    request_id="$(uuidgen)"
+    json_data["request_id"]="$request_id"
+    for arg in "${!json_data[@]}" ; do
+        echo "json_data arg '$arg'" 1>&2
+    done
 
-    declare -A output=(["request_id"]="$request_id")
-    dump_aa_to_json output
+    # Save the state
+    __state_save_aa_json "$PROGRAM" queue "$request_id.job" json_data
+
+    # Load the state data back in, to make sure it was saved
+    echo "load state data back in" 1>&2
+    json_data=()
+    __state_load_json_aa "$PROGRAM" queue "$request_id.job" json_data 
+
+    # Output array to stdout as json
+    __dump_aa_to_json json_data
 }
 
-### Poll the incoming job stack for new jobs and schedule them on a node
-_scheduler_poll_incoming () {
+### Poll the job queue for new jobs and schedule them on a node
+_scheduler_poll_queue () {
     false
 }
 
-__run_subcommand "new" "$@"
-
 ### Look at scheduler state for registered jobs and return them
 _scheduler_jobs () {
-    if [ $# -gt 0 ] ; then
-        __run_subcommand "$@"
-    fi
+    [ $# -gt 0 ] && __run_subcommand "$@"
 }
 
 ### Query a node processor for a particular job's status
@@ -56,4 +64,6 @@ _scheduler_nodes_available () {
     true
 }
 
-. "./_functions.sh"
+# Run main program handler
+scriptdir="$(dirname "${BASH_SOURCE[0]}")"
+. "$scriptdir/_main.sh"

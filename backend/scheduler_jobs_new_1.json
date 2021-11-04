@@ -1,0 +1,4 @@
+{
+    "action": "add_job",
+    "command": [ "curl", "https://www.google.com/" ] 
+}
