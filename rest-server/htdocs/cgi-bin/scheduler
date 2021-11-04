@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+_cgi_scheduler_jobs_new () {
+    __content_type_required "application/json"
+    __content_type "application/json"
+    $BACKEND_PATH -j - ${PATH_INFO//\// }
+}
+
+. ./cgi-svc-wrapper
