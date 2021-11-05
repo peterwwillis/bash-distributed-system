@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e -u -x
+set -e -u
 [ "${DEBUG:-0}" = "1" ] && set -x
 
 ### Create a new job. Should also receive some data (arbitrary? json?)
@@ -37,12 +37,19 @@ _scheduler_jobs_new () {
 
 ### Poll the job queue for new jobs and schedule them on a node
 _scheduler_poll_queue () {
+    while read -r newjob ; do
+        # Create a lock on the new job by renaming it
+        curstate="$(__state_acquire "$PROGRAM" queue "$newjob")"
+
+    done < <(__state_list "$PROGRAM" queue)
     false
 }
 
 ### Look at scheduler state for registered jobs and return them
 _scheduler_jobs () {
-    [ $# -gt 0 ] && __run_subcommand "$@"
+    if    [ $# -gt 1 ] ; then __run_subcommand "$@"
+    else  false
+    fi
 }
 
 ### Query a node processor for a particular job's status
@@ -66,4 +73,4 @@ _scheduler_nodes_available () {
 
 # Run main program handler
 scriptdir="$(dirname "${BASH_SOURCE[0]}")"
-. "$scriptdir/_main.sh"
+. "$scriptdir/functions/main.sh"

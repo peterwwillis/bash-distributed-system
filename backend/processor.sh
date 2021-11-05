@@ -62,4 +62,4 @@ _processor_job_status_update () {
 
 # Run main program handler
 scriptdir="$(dirname "${BASH_SOURCE[0]}")"
-. "$scriptdir/_main.sh"
+. "$scriptdir/functions/main.sh"

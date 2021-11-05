@@ -83,6 +83,7 @@ dag
                 you can walk all the jobs in real time to discover the full
                 dag.
 
+
 ---
 
 
@@ -90,17 +91,16 @@ SAMPLE OPERATION SCRIPT:
 
  - First, a user requests a new job be placed
    - POST /scheduler/jobs/new
-     - Post data: '{"commands": [ "command": [ "curl", "https://www.google.com/" ] ] }'
-     - Post data: 'command=curl "https://www.google.com/"'
+     - Post data: '{"action": "add_job", "command": [ "curl", "https://www.google.com/" ] }'
      - The new job request is added to the job queue in the scheduler.
 
- - The scheduler adds a request to its job queue
+ - The scheduler backend adds a request to its job queue
    - receives post data from above
    - adds job to internal state job queue stack
      - scheduler.sh new job
-       - make new request id 123456789
-       - echo "$request_data" > state/scheduler/queue/123456789.job
-   - Returned data: '{"request_id": "123456789"}'
+       - make new request id 123456789, add to $request_data_json
+       - echo "$request_data_json" > state/scheduler/queue/123456789.job
+   - Returned data: '$request_data_json'
 
  - In the background, the scheduler polls for new requests to schedule
     - scheduler locks internal state (for job queue table)

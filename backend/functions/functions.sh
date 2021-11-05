@@ -2,6 +2,9 @@
 set -eu
 [ "${DEBUG:-0}" = "1" ] && set -x
 
+# Notes:
+#  - Where you see 'declare -n', it's using a 'nameref', which is like a pointer.
+
 __error () { echo "$0: Error: $*" ; exit 1 ; } ;
 
 ### Description: Take a JSON string and create a bash associative array
@@ -10,8 +13,6 @@ __load_json_to_aa () {
     local jsonstring="$1" arrayname="$2"
     declare -n aaptr=$arrayname
     while IFS="=" read -r key value ; do
-        #eval "${aaptr}[\"$key\"]=\"${value//\"/\\\"}\""
-        echo "key '$key' value '$value'" 1>&2
         aaptr["$key"]="$value"
     done < <(jq -r 'to_entries|map("\(.key)=\(.value)")|.[]' <<< "$jsonstring")
 }
@@ -22,13 +23,10 @@ __dump_aa_to_json () {
     declare -n aaptr="$1"
     local outstr="{" value
     for arg in ${!aaptr[@]} ; do
-        echo "arg '$arg'" 1>&2
         value="${aaptr[$arg]}"
-        echo "value '$value'" 1>&2
         outstr="$outstr\"$(__json_fmt_str "$arg")\": \"$(__json_fmt_str "$value")\", "
     done
-    outstr="${outstr::-2}" # remove final comma-space
-    outstr="$outstr""}"
+    outstr="${outstr::-2}""}" # remove final comma-space, add closing bracket
     printf "%s\n" "$outstr"
 }
 
@@ -49,18 +47,13 @@ __json_fmt_str () {
     printf "%s\n" "$str"
 }
 
-### Description: Check if a function exists called '_${PROGRAM}_$1, and if it does,
-###              remove $1 and pass the rest of the arguments to the function,
-###              or die with an error.
-### Usage:       __run_subcommand "$@"
+### Description: Call function '${1}_${2}' and pass it the name of that new
+###              function as well as the rest of the arguments. Enables automatic
+###              calling of child functions.
 __run_subcommand () {
     local self cmd
     self="$1" cmd="$2"; shift 2
     "${self}_${cmd}" "${self}_${cmd}" "$@"
-}
-
-__state_save () {
-    false
 }
 
 ### Description: Make parent directories for a file
@@ -70,37 +63,26 @@ __mkdirp_f () {
     done
 }
 
-### Usage: __state_save_aa_json ASSOCIATIVEARRAY PROGRAM PATH FILENAME 
-__state_save_aa_json () {
-    local program="$1" path="$2" file="$3" array_name="$4" ; shift 4
-    local state_file
-    if [ "$STATE_STORAGE" = "local" ] ; then
-        state_file="$STATE_DIR/$program/$path/$file"
-        __mkdirp_f "$state_file"
-        __dump_aa_to_json "$array_name" > "$state_file"
-    else
-        __error "state_save_aa_json: Invalid STATE_STORAGE"
-    fi
-}
-
-__state_load_json_aa () {
-    local program="$1" path="$2" file="$3" ; shift 3
-    local arrayname="$1" data ; shift
-    if [ "$STATE_STORAGE" = "local" ] ; then
-        data="$(cat "$STATE_DIR/$program/$path/$file")"
-        __load_json_to_aa "$data" "$arrayname"
-    else
-        __error "state_load_json_aa: Invalid STATE_STORAGE"
-    fi
-}
-
-
 ### Description: Read a file into a variable
 __readfile_var () {
     local file="$1" var="$2"; shift 2
     [ "$file" = "-" ] && file="/dev/stdin"
-    set +e
+    set +e # FIXME: I don't know why it's dying without this
     IFS='' read -r "${var?}" < "$file"
     set -e
 }
 
+__usage () {
+    echo "Usage: $0 COMMAND [..]"
+    echo ""
+    echo "Commands:"
+    grep "$0" -e "^_${PROGRAM}_" | cut -d _ -f 3- | cut -d ' ' -f 1 | tr '_' ' ' | sort | sed -e 's/^/    /g'
+    exit 1
+}
+
+# load functions in subdirectories
+scriptdir="$(dirname "${BASH_SOURCE[0]}")"
+for dir in "$scriptdir"/* ; do
+    [ ! -d "$dir" ] && continue
+    for file in "$dir"/*.sh ; do . "$file" ; done
+done

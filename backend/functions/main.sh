@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
 
-STATE_STORAGE="local"
-STATE_DIR="${STATE_DIR:-state}"
 NODE_NAME="${NODE_NAME:-localhost}"
 PROGRAM="$( basename "$0" .sh | tr -C -d 'a-zA-Z0-9_-' )" # sanitize CGI var
 
-# load _functions.sh
+# load functions.sh
 scriptdir="$(dirname "${BASH_SOURCE[0]}")"
-. "$scriptdir/_functions.sh"
+. "$scriptdir/functions.sh"
 
 ##### main program ######
 SHOW_HELP=0
@@ -23,6 +21,6 @@ done
 shift $(($OPTIND-1))
 
 if [ $SHOW_HELP -eq 1 ] || [ $# -lt 1 ] ; then
-    _usage
+    __usage
 fi
 __run_subcommand "_${PROGRAM}" "$@"
