@@ -28,8 +28,8 @@ __state_local_load_json_aa () {
     __load_json_to_aa "$data" "$arrayname"
 }
 
-### Usage: __state_acquire PROGRAM PATH FILENAME
-__state_local_acquire () {
+### Usage: __state_lock PROGRAM PATH FILENAME
+__state_local_lock () {
     local program="$1" path="$2" file="$3" ; shift 3
     local state_file="$STATE_DIR/$program/$path/$file"
     # If the link works, only our process has access to this file.
@@ -43,10 +43,28 @@ __state_local_acquire () {
     # Now we remove the old file (which is safe) so no more processes will attempt to lock the file.
     # 
     # FIXME: This does not account for if our program dies after acquiring a lock.
-    # TODO:  Handle stale locks.
-    rm -f "$state_file"
+    # TODO:  Handle stale locks. Add something about who initiated the lock?
+    #rm -f "$state_file"
     printf "%s\n" "$state_file.cur"
 }
+
+### Usage: _state_unlock PROGRAM PATH FILE
+__state_local_unlock () {
+    __state_local_remove "$1" "$2" "$3.cur"
+}
+
+### Usage: _state_remove PROGRAM PATH FILE
+__state_local_remove () {
+    local program="$1" path="$2" file="$3" ; shift 3
+    local state_file="$STATE_DIR/$program/$path/$file"
+    if [ ! -e "$state_file" ] ; then
+        __error "Could not find state file '$state_file'"
+    fi
+    if [ ! rm "$state_file" ] ; then
+        __error "Could not remove state file '$state_file'"
+    fi
+}
+
 
 ### Description: List the available state
 ### Usage: __state_list PROGRAM PATH [FILENAME]

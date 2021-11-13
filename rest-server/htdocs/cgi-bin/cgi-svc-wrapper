@@ -12,7 +12,7 @@ content_type="text/plain"
 declare -A cgi_get cgi_post
 __cgi_getvars
 
-# If PATH_INFO is '/jobs/new', run function '_cgi_${PROGRAM}_jobs_new $@'
+# If PATH_INFO is '/jobs/add', run function '_cgi_${PROGRAM}_jobs_add $@'
 path_info_func="$( printf "${PATH_INFO//\//_}" | tr -C -d 'a-zA-Z0-9_-' )" # sanitize CGI var
 if [ "$(type -t _cgi_${PROGRAM}$path_info_func)" = "function" ] ; then
     _cgi_${PROGRAM}$path_info_func "$@"
