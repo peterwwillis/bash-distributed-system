@@ -1,18 +1,27 @@
 # shell distributed system
 
+## About
+The Shell Distributed System is a distributed system implemented as shell
+scripts (and some extra unix tools). The purpose of the system is to demonstrate
+how a distributed system works. It can also be used for general purpose
+computing tasks when a more complex system would be overkill or take too long to
+adapt.
+
+---
+
+# Design Components
 
 ## Communication Medium
 
-### Description: allow communication between different components
+### Description
+ - Defines the method for different components to communicate between each
+   other, and with users.
 
 ### Implementation type
-- REST Server
-  - Nginx web server
-  - busybox httpd?
+- REST Server implementing CGI standard
+  - busybox httpd
     - busybox httpd -p 8080 -f -v -h /tmp/http-dir
-    - CGI script:
-      - printf "Content-Type: text/plain\n\n"
-    - curl http://localhost:8080/cgi-bin/some-script
+- HTTP client that makes requests/posts data
 
 ### Supported operations
 1. Pass a request to a CGI script
@@ -23,6 +32,7 @@
 2. Upload a file and pass that file and some arguments to a CGI script
   - Ex:
     - POST /processor/jobs/new
+    - curl -X POST -d '@some-file.json' http://localhost:8080/cgi-bin/processor/jobs/new
 
 
 ## Job Processor
@@ -31,10 +41,8 @@
 - Perform tasks and record their status.
   A job processor has to be able to accept jobs, record their status,
   and report it when queried.
-  We will support our own TCP service that can act as a job processor,
-  or we will supply an API wrapper around a SaaS like AWS ECS so that
-  when we call our API wrapper it responds like our own TCP service.
-  This way we can run jobs on a Linux box or on a SaaS provider.
+  A job processor implements whatever the mechanism is for executing
+  a job - be it locally, or remotely (say, by SaaS).
 
 ### Implementation type:
 - Shell script

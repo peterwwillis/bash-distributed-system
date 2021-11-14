@@ -7,6 +7,9 @@ PROGRAM="$( basename "$0" .sh | tr -C -d 'a-zA-Z0-9_-' )" # sanitize CGI var
 scriptdir="$(dirname "${BASH_SOURCE[0]}")"
 . "$scriptdir/functions.sh"
 
+# Set PATH to include originally-called script
+export PATH="$PATH:$(dirname "${BASH_SOURCE[1]}")"
+
 ##### main program ######
 SHOW_HELP=0
 while getopts "j:hv" args ; do
@@ -23,4 +26,4 @@ shift $(($OPTIND-1))
 if [ $SHOW_HELP -eq 1 ] || [ $# -lt 1 ] ; then
     __usage
 fi
-__run_subcommand "_${PROGRAM}" "$@"
+PARENT_CMD="_${PROGRAM}" __run_subcommand "$@"

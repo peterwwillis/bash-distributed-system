@@ -10,9 +10,5 @@ STATE_DIR="${STATE_DIR:-state}"
 ###    _state list "scheduler" "queue"
 ###       -> _state_local_list "scheduler" "queue"
 __state () {
-    run_subcommand "_state_${STATE_STORAGE}" "$@"
+    PARENT_CMD="__state_${STATE_STORAGE}" __run_subcommand "$@"
 }
-#__state_save () {
-#    false
-#}
-

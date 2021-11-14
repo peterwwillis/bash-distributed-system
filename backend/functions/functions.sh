@@ -5,12 +5,12 @@ set -eu
 # Notes:
 #  - Where you see 'declare -n', it's using a 'nameref', which is like a pointer.
 
-__error () { echo "$0: Error: $*" ; exit 1 ; } ;
+__error () { printf "$0: Error: $*\n" ; exit 1 ; } ;
 
 ### Description: Take a JSON string and create a bash associative array
-### Usage: __load_json_to_aa JSON_STRING AA_NAME
 __load_json_to_aa () {
-    local jsonstring="$1" arrayname="$2"
+    [ $# -ne 2 ] && __error "Usage: $0 __load_json_to_aa ASSOCIATIVEARRAY JSON_STRING"
+    local arrayname="$1" jsonstring="$2"
     declare -n aaptr=$arrayname
     while IFS="=" read -r key value ; do
         aaptr["$key"]="$value"
@@ -30,7 +30,14 @@ __dump_aa_to_json () {
     printf "%s\n" "$outstr"
 }
 
-### Description: Escape a string for use in a JSON document
+### Load environment variables from json file (read from STDIN).
+### Usage: __load_env_from_json <<< "${JSON_DOCUMENT}"
+__load_env_from_json () {
+    eval "$(jq -e -r ".environment | to_entries|map(\"\(.key)='\(.value|tostring)'\")|.[]")"
+}
+
+
+### Escape a string for use in a JSON document.
 ### Usage: STRING=`__json_fmt_str STRING`
 __json_fmt_str () {
     local str="$1"
@@ -38,7 +45,7 @@ __json_fmt_str () {
     str=${str//\//\\\/} # / 
     str=${str//\'/\\\'} # ' (not strictly needed ?)
     str=${str//\"/\\\"} # " 
-    str=${str//   /\\t} # \t (tab)
+    str=${str//	/\\t} # \t (tab)
     str=${str//
 /\\\n} # \n (newline)
     str=${str//^M/\\\r} # \r (carriage return)
@@ -47,13 +54,30 @@ __json_fmt_str () {
     printf "%s\n" "$str"
 }
 
+### Un-escape a string intended for use in a JSON document.
+### Usage: STRING=`__json_unfmt_str STRING`
+__json_unfmt_str () {
+    local str="$1"
+    str=${str//\\\b/^H} # \b (backspace)
+    str=${str//\\\f/^L} # \f (form feed)
+    str=${str//\\\r/^M} # \r (carriage return)
+    str=${str//\\\n/
+} # \n (newline)
+    str=${str//	/\\t} # \t (tab)
+    str=${str//\\\"/\"} # " 
+    str=${str//\\\'/\'} # ' (not strictly needed ?)
+    str=${str//\\\//\/} # / 
+    str=${str//\\\\/\\} # \ 
+    printf "%s\n" "$str"
+}
+
 ### Description: Call function '${1}_${2}' and pass it the name of that new
 ###              function as well as the rest of the arguments. Enables automatic
 ###              calling of child functions.
 __run_subcommand () {
-    local self cmd
-    self="$1" cmd="$2"; shift 2
-    "${self}_${cmd}" "${self}_${cmd}" "$@"
+    local self="$PARENT_CMD" cmd="$1"; shift
+    PARENT_CMD="${self}_${cmd}"
+    "${self}_${cmd}" "$@"
 }
 
 ### Description: Make parent directories for a file

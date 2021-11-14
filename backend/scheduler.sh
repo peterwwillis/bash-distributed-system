@@ -14,12 +14,12 @@ __generic_request_add () {
     fi
 
     declare -A json_data
-    __load_json_to_aa "$JSON_FILE_DATA" json_data
+    __load_json_to_aa json_data "$JSON_FILE_DATA"
     id="$(uuidgen)"
     json_data["id"]="$id"
 
     # Save the state
-    __state save_aa_json "$PROGRAM" "$statename" "$id$statepostfix" json_data
+    __state save_aa_json json_data "$PROGRAM" "$statename" "$id$statepostfix"
 
     # Load the state data back in, to make sure it was saved
     json_data=()
@@ -56,8 +56,10 @@ _scheduler_jobs_list () {
 
 ### Look at scheduler state for registered jobs and return them
 _scheduler_jobs () {
-    if    [ $# -gt 1 ] ; then __run_subcommand "$@"
-    else  _scheduler_jobs_list "$@"
+    if    [ $# -gt 0 ] ; then
+        PARENT_CMD="_scheduler_jobs" __run_subcommand "$@"
+    else
+        _scheduler_jobs_list "$@"
     fi
 }
 
