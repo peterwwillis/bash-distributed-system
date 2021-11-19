@@ -24,6 +24,10 @@ __state_local_save_aa_json () {
 __state_local_load_json_aa () {
     [ $# -ne 4 ] && __error "Usage: $0 load_json_aa ASSOCIATIVEARRAY NAMESPACE PATH FILENAME"
     local arrayname="$1" namespace="$2" path="$3" file="$4" data ; shift 4
+    if ! __state stat "$namespace" "$path" "$file" >/dev/null 2>&1 ; then
+        echo "$0: __state_local_load_json_aa: state file '$namespace' '$path' '$file'  does not exist"
+        return 1
+    fi
     data="$(cat "$STATE_DIR/$namespace/$path/$file")"
     __load_json_to_aa "$arrayname" "$data"
 }

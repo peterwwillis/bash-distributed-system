@@ -28,13 +28,8 @@ _processor_jobs_new () {
     # Add a processor ID in addition to the request ID
     request_id="$request_id/$(uuidgen)"
 
-    # Make sure there's no pre-existing status file
-    if __state stat "$PROGRAM" "job/$request_id" "status.json" >/dev/null 2>&1 ; then
-        __error "Request ID '$request_id' already exists"
-    fi
-
     # Run command
-    _processor_jobs_run "$request_id" "$json_env_file" "${cmds[@]}" >/dev/null 2>&1 &
+    _processor_jobs_run "$request_id" "$json_env_file" "${cmds[@]}" &
     pid="$!" # currently we don't do anything with this
 
     # Wait for state to be created, signaling the job has started
@@ -58,16 +53,12 @@ _processor_jobs_run () {
     if [ -n "${json_env_file:-}" ] ; then
         __load_env_from_json < "${json_env_file}"
     fi
-    if __state stat "$PROGRAM" "job" "environment.json" 2>/dev/null 1>&2 ; then
+    if __state stat "$PROGRAM" "job" "environment.json" >/dev/null 2>&1 ; then
         __load_env_from_json <<< "$(__state read "$PROGRAM" "job" "environment.json")"
     fi
 
     # Record the initial status before running the command
-    _processor_jobs_status_update \
-        -s "pending" \
-        -S "unknown" \
-        -n "$NODE_NAME" \
-        "$request_id"
+    _processor_jobs_status_create "$request_id" "$NODE_NAME"
 
     if [ -n "${PROCESSOR_LOGGER:-}" ] ; then
         __processor_run_logger_"${PROCESSOR_LOGGER}" "$@" &
@@ -89,17 +80,24 @@ _processor_jobs_run () {
 ### Get job status. Returns JSON file of current status
 _processor_jobs_status_get () {
     [ $# -ne 1 ] && __error "Usage: $0 jobs status get REQUEST_ID"
-    __state read "$PROGRAM" "job" "$1/status.json"
+    __state read "$PROGRAM" "job/$1" "status.json"
+}
+
+### Create the initial status entry for the job. This function exists so that
+### we don't try to create it in the '_processor_jobs_status_update' function,
+### which could lead to an existing file being updated with later runs' data.
+_processor_jobs_status_create () {
+    [ $# -ne 2 ] && __error "Usage: $0 jobs status create REQUEST_ID NODE_NAME"
+    local request_id="$1" node="$2"
+    declare -A proc_job
+    proc_job["request_id"]="$request_id"
+    proc_job["node"]="$node"
+    proc_job["status"]="pending"
+    proc_job["state"]="unknown"
+    __state save_aa_json proc_job "$PROGRAM" "job/$request_id" "status.json"
 }
 
 ### Update status of a job
-### Usage: _processor_jobs_status_update OPTIONS REQUEST_ID
-### Options:
-###     -s STATE
-###     -S STATUS
-###     -n NODE
-###     -c CREATED_AT
-###     -m METADATA
 _processor_jobs_status_update () {
     local OPTARG OPTIND opt tmp request_id state status node created_at ended_at metadata
     declare -A proc_job
@@ -121,9 +119,8 @@ _processor_jobs_status_update () {
     request_id="$1"; shift
 
     # Load status into memory if exists
-    if __state stat "$PROGRAM" "job" "$request_id/status.json" 2>/dev/null 1>&2 ; then
-        __state load_json_aa proc_job "$PROGRAM" "job" "$request_id/status.json"
-    fi
+    __state load_json_aa proc_job "$PROGRAM" "job/$request_id" "status.json"
+
     # Override old values with new
     proc_job["request_id"]="$request_id"
     [ -n "${state:-}" ] && proc_job["state"]="$state"
