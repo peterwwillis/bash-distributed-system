@@ -27,7 +27,7 @@ adapt.
 1. Pass a request to a CGI script
   - Ex:
     - GET /processor/jobs/status
-    - GET /processor/jobs/<job number>/status
+    - GET /processor/jobs/${JOB_NUMBER}/status
     - POST /processor/jobs/new
 2. Upload a file and pass that file and some arguments to a CGI script
   - Ex:
