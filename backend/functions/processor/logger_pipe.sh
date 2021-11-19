@@ -1,23 +1,36 @@
 #!/usr/bin/env bash
 set -eu
 
+### Run the command and pipe output to a program, and wait for the command to
+### exit so we can capture its unix exit code and update the job status.
 __processor_run_logger_pipe () {
-    # Run the command! and pipe output to a program
-    "$@" < /dev/null 2>&1 | "${PROCESSOR_LOGGER_CMD[@]}" 2>/dev/null 1>/dev/null &
-    backgroundpid="$!"
-    wait -f "$backgroundpid"
-    result=$?
-    if [ ${PIPESTATUS[0]} -ne 0 ] || [ $result -ne 0 ] ; then
-        echo "$0: Command returned non-zero status ${PIPESTATUS[0]}, $result"
-        exit $result
-    fi
-    # Record the exit status
+    local status
+
     _processor_jobs_status_update \
-        -s "pending" \
+        -s "running" \
         -S "ok" \
         -n "$NODE_NAME" \
         -c "$(date +%s)" \
-        -m "$metadata" \
+        -m "{\"pid\": \"$BASHPID\"}" \
+        "${PROCESSOR_REQUEST_ID}"
+
+    "$@" < /dev/null 2>&1 | "${PROCESSOR_LOGGER_CMD[@]}" >/dev/null 2>&1
+    # Pipestatus only seems to be set properly if the command was *not* made a
+    # background job; using 'wait' doesn't seem to help :(
+    declare -a pipestatus=( "${PIPESTATUS[@]}" )
+    result=${pipestatus[0]}
+    if [ $result -ne 0 ] ; then
+        status="error;$result"
+    else
+        status="ok;$result"
+    fi
+
+    # Record the exit status
+    _processor_jobs_status_update \
+        -s "stopped" \
+        -S "$status" \
+        -n "$NODE_NAME" \
+        -e "$(date +%s)" \
         "${PROCESSOR_REQUEST_ID}"
 }
 

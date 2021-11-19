@@ -12,9 +12,9 @@ __state_local_save_aa_json () {
     # This avoids reads of a file during write, regardless of lock status
     __mkdirp_f "$state_file" # Make sure all the dirs exist
     __dump_aa_to_json "$array_name" > "$state_file.tmp"
-    if ! ln -T "$state_file.tmp" "$state_file" ; then
+    if ! mv -f "$state_file.tmp" "$state_file" ; then
         rm -f "$state_file.tmp"
-        __error "Could not move $state_file.tmp to $state_file"
+        __error "Could not link $state_file.tmp to $state_file"
     fi
     rm -f "$state_file.tmp"
     #__state_unlock "$namespace" "$path" "$file"
