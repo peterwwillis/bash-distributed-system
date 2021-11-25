@@ -12,15 +12,18 @@ set -u
 ###     b. Register test pass/fail with 'return 0' / 'return 1'
 ###  3. Run `./test.sh tests/*.t`
 
-# Configuration file
-ENVRC="./.testshrc"
-
 # Define some common tests here
 #_t_something () {
 #}
 
 ##############################################################################
 # Don't modify anything after here
+
+TESTSH_SRCDIR="${SRCDIR:-./}"
+[ ! "$(expr "$0" : '.*/')" = "0" ] && TESTSH_SRCDIR="$(cd "$(dirname "$0")" && pwd -P)"
+
+# Configuration file
+TESTSH_ENVRC="${TESTSH_ENVRC:-$TESTSH_SRCDIR/.testshrc}"
 
 ### _main() - run the tests
 ### Arguments:
@@ -36,6 +39,9 @@ _main () {
         # The following variables should be used by *.t scripts
         base_name="$(basename "$i" .t)"     ### So you don't need ${BASH_SOURCE[0]}
         tmp="$(mktemp -d)"                  ### Copy your test files into here
+
+        # Terrible, horrible, no good kludge to add a path to $i
+        [ "$(expr "$i" : '.*/')" = 0 ] && i="$(cd "$(dirname "$i")" && pwd -P)/$i"
 
         . "$i" # load the test script into this shell
 
@@ -61,7 +67,9 @@ _main () {
 }
 
 # Load config
-[ -n "${ENVRC:-}" ] && [ -r "${ENVRC:-}" ] && . "$ENVRC"
+if [ -n "${TESTSH_ENVRC:-}" ] && [ -r "${TESTSH_ENVRC:-}" ] ; then
+    set -a ; . "$TESTSH_ENVRC" ; set +a
+fi
 
 _main "$@"
 echo "$0: Passed $_pass tests"

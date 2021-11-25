@@ -1,1 +1,1 @@
-PATH="$PATH:$(pwd)/backend"
+PATH="$PATH:${TESTSH_SRCDIR}/backend"
