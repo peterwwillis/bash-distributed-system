@@ -14,7 +14,7 @@ export PATH="$PATH:$(dirname "${BASH_SOURCE[1]}")"
 SHOW_HELP=0
 while getopts "j:hv" args ; do
     case $args in
-        j)  __readfile_var "$OPTARG" JSON_FILE_DATA ;; # Load JSON data
+        j)  _f_readfile_var "$OPTARG" JSON_FILE_DATA ;; # Load JSON data
         h)  SHOW_HELP=1 ;;
         v)  export DEBUG=1 ;;
         *)  echo "$0: Error: unknown option $args" ;
@@ -24,6 +24,6 @@ done
 shift $(($OPTIND-1))
 
 if [ $SHOW_HELP -eq 1 ] || [ $# -lt 1 ] ; then
-    __usage
+    _f_usage
 fi
-PARENT_CMD="_${PROGRAM}" __run_subcommand "$@"
+PARENT_CMD="_${PROGRAM}" _f_run_subcommand "$@"

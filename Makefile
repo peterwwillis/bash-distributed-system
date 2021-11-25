@@ -1,5 +1,5 @@
 test: backend_test
-	echo done testing
+	@echo done 'make test'
 
 backend_test:
 	make -C backend test

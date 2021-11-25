@@ -18,11 +18,11 @@ _processor_jobs_new () {
         case "$opt" in
             r)      request_id="$OPTARG" ;;
             e)      json_env_file="$OPTARG" ;;
-            *)      __error "$0: Wrong option to _processor_jobs_new: '$opt'" ;;
+            *)      _f_error "$0: Wrong option to _processor_jobs_new: '$opt'" ;;
         esac
     done
     shift $((OPTIND-1))
-    [ $# -gt 0 ] || __error "Usage: $0 OPTIONS -- COMMAND [ARGS ..]\nOptions:\n\t-r REQUEST_ID\n\t-e JSON_ENV_FILE\n"
+    [ $# -gt 0 ] || _f_error "Usage: $0 OPTIONS -- COMMAND [ARGS ..]\nOptions:\n\t-r REQUEST_ID\n\t-e JSON_ENV_FILE\n"
     declare -a cmds=("$@")
 
     # Add a processor ID in addition to the request ID
@@ -34,7 +34,7 @@ _processor_jobs_new () {
 
     # Wait for state to be created, signaling the job has started
     # FIXME: this needs a timeout!
-    while ! __state stat "$PROGRAM" "job/$request_id" "status.json" >/dev/null 2>&1 ; do
+    while ! state.sh stat -q "$PROGRAM" "job/$request_id" "status.json" ; do
         # I can't remember what this is called; adding a slight time fudge to this
         # sleep so lots of different jobs don't all execute at once.
         sleep $(($RANDOM % 3)).$RANDOM
@@ -46,15 +46,15 @@ _processor_jobs_new () {
 ### Execute a job and its accompanying logger, and record the status in state.
 ### This function is run as a background process by _processor_jobs_new ()
 _processor_jobs_run () {
-    [ $# -lt 3 ] && __error "Usage: $0 jobs run REQUEST_ID JSON_ENV_FILE COMMAND [ARGS ..]"
+    [ $# -lt 3 ] && _f_error "Usage: $0 jobs run REQUEST_ID JSON_ENV_FILE COMMAND [ARGS ..]"
     local request_id="$1" json_env_file="$2"; shift 2
     local backgroundpid result
     export PROCESSOR_REQUEST_ID="$request_id"
     if [ -n "${json_env_file:-}" ] ; then
-        __load_env_from_json < "${json_env_file}"
+        _f_load_env_from_json < "${json_env_file}"
     fi
-    if __state stat "$PROGRAM" "job" "environment.json" >/dev/null 2>&1 ; then
-        __load_env_from_json <<< "$(__state read "$PROGRAM" "job" "environment.json")"
+    if state.sh stat -q "$PROGRAM" "job" "environment.json" >/dev/null 2>&1 ; then
+        _f_load_env_from_json <<< "$(state.sh read "$PROGRAM" "job" "environment.json")"
     fi
 
     # Record the initial status before running the command
@@ -64,7 +64,7 @@ _processor_jobs_run () {
         __processor_run_logger_"${PROCESSOR_LOGGER}" "$@" &
         backgroundpid="$!"
     else
-        __error "No handler for PROCESSOR_LOGGER '$PROCESSOR_LOGGER'"
+        _f_error "No handler for PROCESSOR_LOGGER '$PROCESSOR_LOGGER'"
     fi
 
     # Update the state every 5 seconds
@@ -79,22 +79,22 @@ _processor_jobs_run () {
 
 ### Get job status. Returns JSON file of current status
 _processor_jobs_status_get () {
-    [ $# -ne 1 ] && __error "Usage: $0 jobs status get REQUEST_ID"
-    __state read "$PROGRAM" "job/$1" "status.json"
+    [ $# -ne 1 ] && _f_error "Usage: $0 jobs status get REQUEST_ID"
+    state.sh read "$PROGRAM" "job/$1" "status.json"
 }
 
 ### Create the initial status entry for the job. This function exists so that
 ### we don't try to create it in the '_processor_jobs_status_update' function,
 ### which could lead to an existing file being updated with later runs' data.
 _processor_jobs_status_create () {
-    [ $# -ne 2 ] && __error "Usage: $0 jobs status create REQUEST_ID NODE_NAME"
+    [ $# -ne 2 ] && _f_error "Usage: $0 jobs status create REQUEST_ID NODE_NAME"
     local request_id="$1" node="$2"
     declare -A proc_job
     proc_job["request_id"]="$request_id"
     proc_job["node"]="$node"
     proc_job["status"]="pending"
     proc_job["state"]="unknown"
-    __state save_aa_json proc_job "$PROGRAM" "job/$request_id" "status.json"
+    _f_state_save_aa_json proc_job "$PROGRAM" "job/$request_id" "status.json"
 }
 
 ### Update status of a job
@@ -110,16 +110,16 @@ _processor_jobs_status_update () {
             c)      created_at="$OPTARG" ;;
             e)      ended_at="$OPTARG" ;;
             m)      metadata="$OPTARG" ;;
-            *)      __error "$0: Wrong option to _processor_jobs_status_update: '$opt'" ;;
+            *)      _f_error "$0: Wrong option to _processor_jobs_status_update: '$opt'" ;;
         esac
     done
     shift $((OPTIND-1))
 
-    [ $# -lt 1 ] && __error "Usage: OPTIONS REQUEST_ID\nOptions:\n\t-s STATE\n\t-S STATUS\n\t-n NODE\n\t-c CREATED_AT\n\t-m METADATA\n"
+    [ $# -lt 1 ] && _f_error "Usage: OPTIONS REQUEST_ID\nOptions:\n\t-s STATE\n\t-S STATUS\n\t-n NODE\n\t-c CREATED_AT\n\t-m METADATA\n"
     request_id="$1"; shift
 
     # Load status into memory if exists
-    __state load_json_aa proc_job "$PROGRAM" "job/$request_id" "status.json"
+    _f_state_load_json_aa proc_job "$PROGRAM" "job/$request_id" "status.json"
 
     # Override old values with new
     proc_job["request_id"]="$request_id"
@@ -132,7 +132,7 @@ _processor_jobs_status_update () {
 
     declare -A metadata
     if [ -n "${proc_job["metadata"]:-}" ] ; then
-        __load_json_to_aa metadata "${proc_job["metadata"]}"
+        _f_load_json_to_aa metadata "${proc_job["metadata"]}"
         # Check if process is alive or dead
         if [ -n "${metadata["pid"]}" ] ; then
             if [ "${proc_job["state"]:-}" = "running" ] ; then
@@ -144,15 +144,19 @@ _processor_jobs_status_update () {
         fi
     fi
 
-    __state save_aa_json proc_job "$PROGRAM" "job" "$request_id/status.json"
+    _f_state_save_aa_json proc_job "$PROGRAM" "job/$request_id" "status.json"
 }
 
 _processor_jobs_status () {
-    [ $# -gt 0 ] && PARENT_CMD="_processor_jobs_status" __run_subcommand "$@"
+    [ $# -gt 0 ] && PARENT_CMD="_processor_jobs_status" _f_run_subcommand "$@"
+}
+
+_processor_jobs_list () {
+    state.sh list "$PROGRAM" job
 }
 
 _processor_jobs () {
-    [ $# -gt 0 ] && PARENT_CMD="_processor_jobs" __run_subcommand "$@"
+    [ $# -gt 0 ] && PARENT_CMD="_processor_jobs" _f_run_subcommand "$@"
 }
 
 # Run main program handler
