@@ -126,7 +126,7 @@ adapt.
 
 ### Walkthrough
 
-#### 1. Submit new job to REST API
+#### 1. Submit new job to scheduler REST API
 - First, a user requests a new job be placed
   - POST /scheduler/jobs/new
     - Post data: '{"action": "add_job", "command": [ "curl", "https://www.google.com/" ] }'
@@ -152,9 +152,10 @@ adapt.
            Maybe send it the job request so it can filter the nodes based on it.
        - Returned data: 
          ```
-         { "nodes": 
-             [ "name": "node01", "ipv4": [ "192.168.0.1" ], "hostname": "node01.internal", "uri": "http://node01.internal:5678" ] ,
-             [ "name": "localhost", "ipv4": [ "127.0.0.1" ], "hostname": "localhost", "uri": "http://localhost:5678" ]
+         { "nodes": [
+             { "name": "node01", "ipv4": [ "192.168.0.1" ], "hostname": "node01.internal", "uri": "http://node01.internal:5678" } ,
+             { "name": "localhost", "ipv4": [ "127.0.0.1" ], "hostname": "localhost", "uri": "http://localhost:5678" }
+           ]
          }
          ```
      - Scheduler starts the job on the node
@@ -162,11 +163,10 @@ adapt.
          - `POST /nodemgr/jobs/run?job-number=2&json_data=$json_data`
          - Returned data:
            ```
-           { "nodejobs":
-               [ "nodejob-idx": "123456789", 
-                 "schedulerjob-idx": "2", 
-                 "hostname": "node01.internal", "ipv4": [ "192.168.20.22" ] 
-           ]   }
+           { "nodejobs": [
+               { "nodejob-idx": "123456789", "schedulerjob-idx": "2", "hostname": "node01.internal", "ipv4": [ "192.168.20.22" ] }
+             ]
+           }
            ```
        - Scheduler records information about the node job into state
          - records the job that was placed at X time on Y node with Z reference data about the backend
@@ -188,14 +188,14 @@ adapt.
        - Run the process in the background.
      - use whatever API of the backend node thing to send the request
 
-#### 4. User requests status from scheduler
+#### 5. User requests status from scheduler
 - The user requests the status of jobs
   - GET /scheduler/jobs
     - Returned data: '2'
   - GET /scheduler/jobs/2/status
     - Returned data: '{"state": "stopped", "status": "good", "node": "node-01", "created-at": "Some Timestamp"}'
 
-#### 5. Scheduler returns job status
+#### 6. Scheduler returns job status
 - Scheduler receives job status request
 - In the background, the scheduler polls all running jobs for updates
   - GET /scheduler/jobs

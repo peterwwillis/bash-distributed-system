@@ -37,8 +37,8 @@ _main () {
         cd "$testsh_pwd"
 
         # The following variables should be used by *.t scripts
-        base_name="$(basename "$i" .t)"     ### So you don't need ${BASH_SOURCE[0]}
-        tmp="$(mktemp -d)"                  ### Copy your test files into here
+        base_name="$(basename "$i" .t)"  ### So you don't need ${BASH_SOURCE[0]}
+        tmpdir="$(mktemp -d)"            ### Copy your test files into here
 
         # Terrible, horrible, no good kludge to add a path to $i
         [ "$(expr "$i" : '.*/')" = 0 ] && i="$(cd "$(dirname "$i")" && pwd -P)/$i"
@@ -59,7 +59,7 @@ _main () {
             fi
         done
 
-        rm -rf "$tmp"
+        rm -rf "$tmpdir"
         [ $fail -gt 0 ] && echo "$0: $base_name: Failed $fail tests" && _fail="$(($_fail+$fail))"
         _pass=$(($_pass+$pass))
 
