@@ -1,4 +1,4 @@
-PROGRAMS = processor.sh scheduler.sh state.sh
+PROGRAMS = processor.sh processor-logger-tee.sh scheduler.sh state.sh
 SUBDIRS = 
 
 include ../makefile.inc

@@ -1,11 +1,13 @@
 # To install system-wide, use:
 #
-#     make PREFIX=/usr/local clean clean-install build test install
+#     make PREFIX=/usr/local clean clean-install build install test
 # 
-# Otherwise the below defaults to installing to the current directory plus
-# '_install'. This makes it easy to compile the applications and test them from
-# the development environment. (NOTE: The installed files will have hard-coded
-# paths so you can't just copy them somewhere else and run them)
+# The PREFIX defaults to the current directory plus '_install' so it's easier 
+# to install and test the software in the local dev environment. Note that the
+# installed files have hard-coded paths, so you can't just copy them somewhere
+# and run them. This is also why 'install' is run before 'test' (otherwise
+# we'd need to hard-code the paths to the local dev environment, test them,
+# then hard-code the paths again before installing)
 
 #DESTDIR = 
 PREFIX ?= $(shell pwd)/_install/usr
