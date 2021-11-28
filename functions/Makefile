@@ -1,15 +1,11 @@
-.SUFFIXES: .m4 .sh
-
 PROGRAMS = functions.sh main.sh
+SUBDIRS = processor state
 BINDIR = $(FUNCTIONSDIR)
 
 include ../makefile.inc
 
+build: build-default
 clean: clean-default
-	make -C processor clean
-	make -C state clean
-
+clean-install: clean-install-default
 install: install-default
-	make -C processor install
-	make -C state install
 

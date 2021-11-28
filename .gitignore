@@ -1,0 +1,4 @@
+backend/*.sh
+functions/**.sh
+functions/**/**.sh
+_install/

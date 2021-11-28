@@ -15,34 +15,40 @@ FUNCTIONSDIR=$(LIBDIR)/shds/functions
 
 # Last thing's first
 M4_ARGS := -D_PREFIX_=$(PREFIX) -D_EXEC_PREFIX=$(EXEC_PREFIX) -D_BINDIR_=$(BINDIR) \
-    -D_LIBDIR_=$(LIBDIR) -D_FUNCTIONSDIR_=$(FUNCTIONSDIR)
+    -D_LIBDIR_=$(LIBDIR) -D_FUNCTIONSDIR_=$(FUNCTIONSDIR) -D_BINPREFIX_=$(BINPREFIX)
 
 PATH := $(PATH):$(DESTDIR)$(BINDIR)
 export PATH
 
 ##################################################################################
 
-.PHONY: all clean lint install test
+.PHONY: all all-default clean clean-default clean-install clean-install-default lint lint-default install install-default test test-default
 
 ifdef PROGRAMS
 
+.SUFFIXES: .m4 .sh
+
 all-default: $(PROGRAMS)
 
-clean-default: clean-install-default
+build-default: $(PROGRAMS)
+	set -e; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i build ; done ; fi
+
+clean-default:
 	for i in $(PROGRAMS) ; do rm -f "$$i" ; done
+	set -e; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i clean ; done ; fi
 
 lint-default: $(PROGRAMS)
-	true
-	#for i in $(PROGRAMS) ; do shellcheck $$i ; done
+	for i in $(PROGRAMS) ; do shellcheck $$i ; done || true
+	set -e; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i lint ; done ; fi
 
 clean-install-default:
 	for i in $(PROGRAMS) ; do rm -f "$(DESTDIR)$(BINDIR)/$$i" ; done
+	set -e; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i clean-install ; done ; fi
 
-install-default:
+install-default: build-default
 	$(INSTALL) -d -m 0755 $(DESTDIR)$(BINDIR)
-	for i in $(PROGRAMS) ; do \
-        $(INSTALL) $$i "$(DESTDIR)$(BINDIR)/$$i" ; \
-    done
+	set -e; for i in $(PROGRAMS) ; do $(INSTALL) $$i "$(DESTDIR)$(BINDIR)/$$i" ; done
+	set -e; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i install ; done ; fi
 
 endif
 
@@ -51,6 +57,7 @@ endif
 
 test-default: lint
 	make -C tests
+	set -e; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i test ; done ; fi
 
 %: %-default
 	@true
