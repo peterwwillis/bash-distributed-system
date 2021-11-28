@@ -4,7 +4,6 @@ set -eu
 [ "${DEBUG:-0}" = "1" ] && set -x
 
 PROCESSOR_LOGGER="pipe"
-declare -a PROCESSOR_LOGGER_CMD=("processor-logger-tee.sh")
 
 ### Start running a new job.
 ### Usage: _processor_jobs_new OPTIONS -- COMMAND [ARGS ..]
@@ -13,7 +12,7 @@ declare -a PROCESSOR_LOGGER_CMD=("processor-logger-tee.sh")
 ###     -e JSON_ENV_FILE
 _processor_jobs_new () {
     local state status node created_at
-    local OPTARG OPTIND opt tmp request_id json_env_file="" pid
+    local OPTARG OPTIND opt request_id json_env_file="" pid
 
     while getopts "r:e:" opt ; do
         case "$opt" in
@@ -49,7 +48,7 @@ _processor_jobs_new () {
 _processor_jobs_run () {
     [ $# -lt 3 ] && _f_error "Usage: $0 jobs run REQUEST_ID JSON_ENV_FILE COMMAND [ARGS ..]"
     local request_id="$1" json_env_file="$2"; shift 2
-    local backgroundpid result
+    local backgroundpid
     export PROCESSOR_REQUEST_ID="$request_id"
     if [ -n "${json_env_file:-}" ] ; then
         _f_load_env_from_json < "${json_env_file}"
@@ -100,7 +99,7 @@ _processor_jobs_status_create () {
 
 ### Update status of a job
 _processor_jobs_status_update () {
-    local OPTARG OPTIND opt tmp request_id state status node created_at ended_at metadata
+    local OPTARG OPTIND opt request_id state status node created_at ended_at metadata
     declare -A proc_job
 
     while getopts "s:S:n:c:e:m:" opt ; do
@@ -161,6 +160,5 @@ _processor_jobs () {
 }
 
 # Run main program handler
-scriptdir="$(dirname "${BASH_SOURCE[0]}")"
 functionsdir="_FUNCTIONSDIR_"
 . "$functionsdir/main.sh"

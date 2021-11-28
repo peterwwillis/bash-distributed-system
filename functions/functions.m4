@@ -6,6 +6,7 @@ set -eu
 # Notes:
 #  - Where you see 'declare -n', it's using a 'nameref', which is like a pointer.
 
+# shellcheck disable=SC2059
 _f_error () { printf "$0: Error: $*\n" ; exit 1 ; } ;
 
 ### Description: Take a JSON string and create a bash associative array
@@ -21,9 +22,12 @@ _f_load_json_to_aa () {
 ### Description: Take a Bash associative array $1 and dump it as a JSON document
 ### Usage: _f_dump_aa_to_json AA_NAME
 _f_dump_aa_to_json () {
+    # FIXME: apparently the following should not work, because arrays can't be
+    #        used with pointers? find out if this is working or not?
+    # shellcheck disable=SC2178
     declare -n aaptr="$1"
     local outstr="{" value
-    for arg in ${!aaptr[@]} ; do
+    for arg in "${!aaptr[@]}" ; do
         value="${aaptr[$arg]}"
         outstr="$outstr\"$(_f_json_fmt_str "$arg")\": \"$(_f_json_fmt_str "$value")\", "
     done

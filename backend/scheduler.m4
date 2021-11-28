@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# vim: syntax=bash
 set -e -u
 [ "${DEBUG:-0}" = "1" ] && set -x
 
@@ -22,6 +23,7 @@ __generic_request_add () {
     __state save_aa_json json_data "$PROGRAM" "$statename" "$id$statepostfix"
 
     # Load the state data back in, to make sure it was saved
+    # shellcheck disable=SC2034
     json_data=()
     __state load_json_aa "$PROGRAM" queue "$id$statepostfix" json_data 
 
@@ -66,6 +68,7 @@ _scheduler_jobs () {
 ### Poll the job queue for new jobs and schedule them on a node
 _scheduler_poll_queue () {
     false
+    # TODO: finish this function
     while read -r newjob ; do
         # Create a lock on the new job by renaming it
         curstate="$(__state lock "$PROGRAM" queue "$newjob")"
@@ -102,6 +105,5 @@ _scheduler_nodes_remove () {
 }
 
 # Run main program handler
-scriptdir="$(dirname "${BASH_SOURCE[0]}")"
 functionsdir="_FUNCTIONSDIR_"
 . "$functionsdir/main.sh"

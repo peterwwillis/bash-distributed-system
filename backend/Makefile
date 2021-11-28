@@ -3,9 +3,9 @@ SUBDIRS =
 
 include ../makefile.inc
 
-all: all-default
 build: build-default
 test: test-default
+	make -C tests test
 clean: clean-default
 clean-install:
 	for i in $(PROGRAMS) ; do \

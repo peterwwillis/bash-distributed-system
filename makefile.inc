@@ -44,7 +44,7 @@ clean-default:
 	set -ex; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i clean ; done ; fi
 
 lint-default: $(PROGRAMS)
-	for i in $(PROGRAMS) ; do shellcheck $$i ; done || true
+	for i in $(PROGRAMS) ; do shellcheck $$i ; done
 	set -ex; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i lint ; done ; fi
 
 clean-install-default:
@@ -60,7 +60,6 @@ install-default: build-default
 	m4 $(M4_ARGS) -P <'$<' >'$@'
 
 test-default: lint-default
-	make -C tests
 	set -ex; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i test ; done ; fi
 
 %: %-default

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# vim: syntax=bash
 
 ### Local State functions
 
@@ -104,6 +105,7 @@ __state_local_list () {
     [ -n "${1:-}" ] && statepath="$statepath/$1"
     [ -n "${2:-}" ] && statepath="$statepath/$2"
     [ -n "${3:-}" ] && statepath="$statepath/$3"
+    # shellcheck disable=SC2010
     ls "$STATE_DIR/$namespace/$path/$file" | grep -v -e "^.*\.tmp$|^.*\.lock$"
 }
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -eu
 
+declare -a PROCESSOR_LOGGER_CMD=("processor-logger-tee.sh")
+
 ### Run the command and pipe output to a program, and wait for the command to
 ### exit so we can capture its unix exit code and update the job status.
 __processor_run_logger_pipe () {
@@ -19,7 +21,7 @@ __processor_run_logger_pipe () {
     # background job; using 'wait' doesn't seem to help :(
     declare -a pipestatus=( "${PIPESTATUS[@]}" )
     result=${pipestatus[0]}
-    if [ $result -ne 0 ] ; then
+    if [ "$result" -ne 0 ] ; then
         status="error;$result"
     else
         status="ok;$result"

@@ -9,6 +9,7 @@ scriptdir="$(dirname "${BASH_SOURCE[0]}")"
 . "$scriptdir/functions.sh"
 
 # Set PATH to include originally-called script
+# shellcheck disable=SC2155
 export PATH="$PATH:$(dirname "${BASH_SOURCE[1]}")"
 
 ##### main program ######
