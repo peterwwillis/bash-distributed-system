@@ -162,4 +162,4 @@ _processor_jobs () {
 # Run main program handler
 scriptdir="$(dirname "${BASH_SOURCE[0]}")"
 functionsdir="_FUNCTIONSDIR_"
-. "$functionsdir/functions/main.sh"
+. "$functionsdir/main.sh"

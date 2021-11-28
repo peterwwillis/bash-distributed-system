@@ -1,37 +1,56 @@
-INSTALL=install
-INSTALL_PROGRAM=$(INSTALL) -m 0755
+INSTALL ?= install
+INSTALL_PROGRAM ?= $(INSTALL) -m 0755
 
 # Path defaults
-PREFIX=/usr/local
-EXEC_PREFIX=$(PREFIX)
-BINDIR=$(EXEC_PREFIX)/bin
-LIBDIR=$(EXEC_PREFIX)/lib
+PREFIX ?= /usr/local
+EXEC_PREFIX ?= $(PREFIX)
+BINDIR ?= $(EXEC_PREFIX)/bin
+LIBDIR ?= $(EXEC_PREFIX)/lib
 
-BINPREFIX=shds-
+# The prefix added to the installed programs
+BINPREFIX ?= shds-
 
-# Program-specific variables
-FUNCTIONSDIR=$(LIBDIR)/functions
+# The directory where the 'functions/' library will be installed
+FUNCTIONSDIR=$(LIBDIR)/shds/functions
 
 # Last thing's first
-M4_ARGS=-D_PREFIX_=$(PREFIX) -D_EXEC_PREFIX=$(EXEC_PREFIX) -D_BINDIR_=$(BINDIR) \
+M4_ARGS := -D_PREFIX_=$(PREFIX) -D_EXEC_PREFIX=$(EXEC_PREFIX) -D_BINDIR_=$(BINDIR) \
     -D_LIBDIR_=$(LIBDIR) -D_FUNCTIONSDIR_=$(FUNCTIONSDIR)
 
+PATH := $(PATH):$(DESTDIR)$(BINDIR)
+export PATH
 
 ##################################################################################
 
-all: $(PROGRAMS)
+.PHONY: all clean lint install test
 
-clean:
-	for i in $(PROGRAMS) ; do rm "$$i" ; done
+ifdef PROGRAMS
 
-lint: $(PROGRAMS)
-	for i in $(PROGRAMS) ; do shellcheck $$i ; done
+all-default: $(PROGRAMS)
+
+clean-default: clean-install-default
+	for i in $(PROGRAMS) ; do rm -f "$$i" ; done
+
+lint-default: $(PROGRAMS)
+	true
+	#for i in $(PROGRAMS) ; do shellcheck $$i ; done
+
+clean-install-default:
+	for i in $(PROGRAMS) ; do rm -f "$(DESTDIR)$(BINDIR)/$$i" ; done
+
+install-default:
+	$(INSTALL) -d -m 0755 $(DESTDIR)$(BINDIR)
+	for i in $(PROGRAMS) ; do \
+        $(INSTALL) $$i "$(DESTDIR)$(BINDIR)/$$i" ; \
+    done
+
+endif
 
 %.sh: %.m4
 	m4 $(M4_ARGS) -P <'$<' >'$@'
 
-test: lint
+test-default: lint
 	make -C tests
 
-install:
-	for i in $(PROGRAMS) ; do $(INSTALL) $$i $(DESTDIR)$(BINDIR)/$(BINPREFIX)$$i
+%: %-default
+	@true
