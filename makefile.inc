@@ -1,3 +1,5 @@
+# vim: syntax=make
+
 INSTALL ?= install
 INSTALL_PROGRAM ?= $(INSTALL) -m 0755
 
@@ -28,24 +30,22 @@ export PATH
 
 ##################################################################################
 
-.PHONY: all all-default clean clean-default clean-install clean-install-default lint lint-default install install-default test test-default
-
-ifdef PROGRAMS
+.PHONY: all all-default build build-default clean clean-default clean-install clean-install-default lint lint-default install install-default test test-default
 
 .SUFFIXES: .m4 .sh
 
 all-default: $(PROGRAMS)
 
 build-default: $(PROGRAMS)
-	set -e; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i build ; done ; fi
+	set -ex; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i build ; done ; fi
 
 clean-default:
 	for i in $(PROGRAMS) ; do rm -f "$$i" ; done
-	set -e; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i clean ; done ; fi
+	set -ex; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i clean ; done ; fi
 
 lint-default: $(PROGRAMS)
 	for i in $(PROGRAMS) ; do shellcheck $$i ; done || true
-	set -e; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i lint ; done ; fi
+	set -ex; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i lint ; done ; fi
 
 clean-install-default:
 	for i in $(PROGRAMS) ; do rm -f "$(DESTDIR)$(BINDIR)/$$i" ; done
@@ -53,17 +53,15 @@ clean-install-default:
 
 install-default: build-default
 	$(INSTALL) -d -m 0755 $(DESTDIR)$(BINDIR)
-	set -e; for i in $(PROGRAMS) ; do $(INSTALL) $$i "$(DESTDIR)$(BINDIR)/$$i" ; done
-	set -e; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i install ; done ; fi
-
-endif
+	set -ex; for i in $(PROGRAMS) ; do $(INSTALL) $$i "$(DESTDIR)$(BINDIR)/$$i" ; done
+	set -ex; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i install ; done ; fi
 
 %.sh: %.m4
 	m4 $(M4_ARGS) -P <'$<' >'$@'
 
-test-default: lint
+test-default: lint-default
 	make -C tests
-	set -e; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i test ; done ; fi
+	set -ex; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i test ; done ; fi
 
 %: %-default
-	@true
+	@	true

@@ -5,13 +5,14 @@
 # just copy them somewhere else and run them.
 #DESTDIR = $(shell pwd)/_install
 PREFIX = $(shell pwd)/_install/usr
-
 # Pass the above variables along to the rest of the Make processes
 export
 
-include makefile.inc
+SUBDIRS = backend functions
 
-all: build
+all: build-default
+
+include ./makefile.inc
 
 test: backend_test
 	@echo done 'make test'
@@ -19,18 +20,10 @@ test: backend_test
 backend_test:
 	make -C backend test
 
-build:
-	make -C backend build
-	make -C functions build
+build: build-default
+install: install-default
+clean: clean-default
 
-install: build
-	make -C functions install
-	make -C backend install
+clean-install: clean-install-default
+	find $(PREFIX) -type d -exec rmdir -p {} \; || true
 
-clean:
-	make -C backend clean
-	make -C functions clean
-
-clean-install:
-	make -C backend clean-install
-	make -C functions clean-install

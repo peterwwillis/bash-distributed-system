@@ -1,4 +1,5 @@
 BINDIR = $(FUNCTIONSDIR)/state
+SUBDIRS = 
 PROGRAMS = state.sh local.sh
 
 include ../../makefile.inc

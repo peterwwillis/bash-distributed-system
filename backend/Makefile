@@ -1,8 +1,10 @@
 PROGRAMS = processor.sh scheduler.sh state.sh
+SUBDIRS = 
 
 include ../makefile.inc
 
 all: all-default
+build: build-default
 clean: clean-default
 clean-install:
 	for i in $(PROGRAMS) ; do \
