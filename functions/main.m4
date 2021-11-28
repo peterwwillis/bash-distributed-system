@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# vim: syntax=bash
 
 NODE_NAME="${NODE_NAME:-localhost}"
 PROGRAM="$( basename "$0" .sh | sed -e 's/^_BINPREFIX_//' | tr -C -d 'a-zA-Z0-9_-' )" # sanitize CGI var

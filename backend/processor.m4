@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# vim: syntax=bash
 set -eu
 [ "${DEBUG:-0}" = "1" ] && set -x
 
@@ -34,7 +35,7 @@ _processor_jobs_new () {
 
     # Wait for state to be created, signaling the job has started
     # FIXME: this needs a timeout!
-    while ! state.sh stat -q "$PROGRAM" "job/$request_id" "status.json" ; do
+    while ! _BIN_STATE_ stat -q "$PROGRAM" "job/$request_id" "status.json" ; do
         # I can't remember what this is called; adding a slight time fudge to this
         # sleep so lots of different jobs don't all execute at once.
         sleep $(($RANDOM % 3)).$RANDOM
@@ -53,8 +54,8 @@ _processor_jobs_run () {
     if [ -n "${json_env_file:-}" ] ; then
         _f_load_env_from_json < "${json_env_file}"
     fi
-    if state.sh stat -q "$PROGRAM" "job" "environment.json" >/dev/null 2>&1 ; then
-        _f_load_env_from_json <<< "$(state.sh read "$PROGRAM" "job" "environment.json")"
+    if _BIN_STATE_ stat -q "$PROGRAM" "job" "environment.json" >/dev/null 2>&1 ; then
+        _f_load_env_from_json <<< "$(_BIN_STATE_ read "$PROGRAM" "job" "environment.json")"
     fi
 
     # Record the initial status before running the command
@@ -80,7 +81,7 @@ _processor_jobs_run () {
 ### Get job status. Returns JSON file of current status
 _processor_jobs_status_get () {
     [ $# -ne 1 ] && _f_error "Usage: $0 jobs status get REQUEST_ID"
-    state.sh read "$PROGRAM" "job/$1" "status.json"
+    _BIN_STATE_ read "$PROGRAM" "job/$1" "status.json"
 }
 
 ### Create the initial status entry for the job. This function exists so that
@@ -152,7 +153,7 @@ _processor_jobs_status () {
 }
 
 _processor_jobs_list () {
-    state.sh list "$PROGRAM" job
+    _BIN_STATE_ list "$PROGRAM" job
 }
 
 _processor_jobs () {

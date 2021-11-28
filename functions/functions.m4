@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# vim: syntax=bash
 set -eu
 [ "${DEBUG:-0}" = "1" ] && set -x
 
@@ -34,7 +35,7 @@ _f_dump_aa_to_json () {
 _f_state_save_aa_json () {
     [ $# -ne 4 ] && _f_error "Usage: $0 save_aa_json ASSOCIATIVEARRAY NAMESPACE PATH FILENAME"
     local array_name="$1" namespace="$2" path="$3" file="$4" ; shift 4
-    _f_dump_aa_to_json "$array_name" | state.sh write "$namespace" "$path" "$file"
+    _f_dump_aa_to_json "$array_name" | _BIN_STATE_ write "$namespace" "$path" "$file"
     # FIXME: check for pipe status return
 }
 
@@ -42,12 +43,12 @@ _f_state_save_aa_json () {
 _f_state_load_json_aa () {
     [ $# -ne 4 ] && _f_error "Usage: $0 load_json_aa ASSOCIATIVEARRAY NAMESPACE PATH FILENAME"
     local arrayname="$1" namespace="$2" path="$3" file="$4" data ; shift 4
-    if ! state.sh stat -q "$namespace" "$path" "$file" ; then
+    if ! _BIN_STATE_ stat -q "$namespace" "$path" "$file" ; then
         echo "$0: _f_state_load_json_aa: state file '$namespace' '$path' '$file'  does not exist"
         return 1
     fi
     # FIXME: make sure we check the status of this command call
-    data="$(state.sh read "$namespace" "$path" "$file")"
+    data="$(_BIN_STATE_ read "$namespace" "$path" "$file")"
     _f_load_json_to_aa "$arrayname" "$data"
 }
 
