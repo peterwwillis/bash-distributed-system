@@ -5,6 +5,7 @@ include ../makefile.inc
 
 all: all-default
 build: build-default
+test: test-default
 clean: clean-default
 clean-install:
 	for i in $(PROGRAMS) ; do \
