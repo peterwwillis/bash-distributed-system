@@ -29,6 +29,8 @@ M4_ARGS := -D_PREFIX_=$(PREFIX) -D_EXEC_PREFIX=$(EXEC_PREFIX) \
 PATH := $(PATH):$(DESTDIR)$(BINDIR)
 export PATH
 
+INSTALLDIR ?= $(BINDIR)
+
 ##################################################################################
 
 .PHONY: all all-default build build-default clean clean-default clean-install clean-install-default lint lint-default install install-default test test-default
@@ -49,12 +51,12 @@ lint-default: $(PROGRAMS)
 	set -ex; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i lint ; done ; fi
 
 clean-install-default:
-	for i in $(PROGRAMS) ; do rm -f "$(DESTDIR)$(BINDIR)/$$i" ; done
+	for i in $(PROGRAMS) ; do rm -f "$(DESTDIR)$(INSTALLDIR)/$$i" ; done
 	set -e; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i clean-install ; done ; fi
 
-install-default: build-default
-	$(INSTALL) -d -m 0755 $(DESTDIR)$(BINDIR)
-	set -ex; for i in $(PROGRAMS) ; do $(INSTALL) $$i "$(DESTDIR)$(BINDIR)/$$i" ; done
+install-default:
+	$(INSTALL) -d -m 0755 $(DESTDIR)$(INSTALLDIR)
+	set -ex; for i in $(PROGRAMS) ; do $(INSTALL) -m 0755 $$i "$(DESTDIR)$(INSTALLDIR)/$$i" ; done
 	set -ex; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i install ; done ; fi
 
 %.sh: %.m4

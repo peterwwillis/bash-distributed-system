@@ -1,6 +1,6 @@
-PROGRAMS = scheduler.sh hello-world.sh
 SUBDIRS = 
-BINDIR = $(RESTAPIDIR)/cgi-bin
+PROGRAMS = scheduler.sh hello-world.sh
+INSTALLDIR = $(RESTAPIDIR)/cgi-bin
 
 include ../../makefile.inc
 
@@ -12,11 +12,11 @@ clean: clean-default
 clean-install:
 	for i in $(PROGRAMS) ; do \
 		progname="$$(basename $$i .sh)" ; \
-		rm -f "$(DESTDIR)$(BINDIR)/$$progname" ; \
+		rm -f "$(DESTDIR)$(INSTALLDIR)/$$progname" ; \
 	done
 install:
-	$(INSTALL) -d -m 0755 $(DESTDIR)$(BINDIR)
+	$(INSTALL) -d -m 0755 $(DESTDIR)$(INSTALLDIR)
 	for i in $(PROGRAMS) ; do \
         progname="$$(basename $$i .sh)" ; \
-        $(INSTALL) $$i "$(DESTDIR)$(BINDIR)/$$progname" ; \
+        $(INSTALL) $$i "$(DESTDIR)$(INSTALLDIR)/$$progname" ; \
     done

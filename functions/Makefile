@@ -1,6 +1,6 @@
-PROGRAMS = functions.sh main.sh
 SUBDIRS = processor state
-BINDIR = $(FUNCTIONSDIR)
+PROGRAMS = functions.sh main.sh
+INSTALLDIR = $(FUNCTIONSDIR)
 
 include ../makefile.inc
 

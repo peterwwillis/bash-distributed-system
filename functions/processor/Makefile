@@ -1,6 +1,6 @@
-BINDIR = $(FUNCTIONSDIR)/processor
 SUBDIRS = 
 PROGRAMS = logger_pipe.sh
+INSTALLDIR = $(FUNCTIONSDIR)/processor
 
 include ../../makefile.inc
 

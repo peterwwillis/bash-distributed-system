@@ -1,6 +1,6 @@
-BINDIR = $(FUNCTIONSDIR)/state
 SUBDIRS = 
 PROGRAMS = state.sh local.sh
+INSTALLDIR = $(FUNCTIONSDIR)/state
 
 include ../../makefile.inc
 
