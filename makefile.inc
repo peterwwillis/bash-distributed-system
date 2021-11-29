@@ -15,6 +15,9 @@ BINPREFIX ?= shds-
 # The directory where the 'functions/' library will be installed
 FUNCTIONSDIR=$(LIBDIR)/shds/functions
 
+# The directory where the cgi-bin apps will be installed
+CGIBINDIR=$(LIBDIR)/shds/cgi-bin
+
 BIN_STATE ?= $(BINPREFIX)state
 BIN_PROCESSOR ?= $(BINPREFIX)processor
 BIN_SCHEDULER ?= $(BINPREFIX)scheduler

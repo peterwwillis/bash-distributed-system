@@ -49,10 +49,14 @@ function __cgi_getvars () {
         cgi_post[${parm_post[i]}]="$(__urldecode "${parm_post[i+1]}")"
     done
 }
+__request_method_required () {
+    if [ ! "${REQUEST_METHOD:-}" = "$1" ] ; then
+        __httperror 400 "Bad request: Invalid method '$REQUEST_METHOD'"
+    fi
+}
 __content_type_required () {
-    local content_type="$1"
-    if [ ! "$CONTENT_TYPE" = "$content_type" ] ; then
-        __httperror 400 "Bad Request: Invalid content type (required: $content_type)"
+    if [ ! "${CONTENT_TYPE:-}" = "$1" ] ; then
+        __httperror 400 "Bad Request: Invalid content type (required: '$1')"
     fi
 }
 __content_type () {

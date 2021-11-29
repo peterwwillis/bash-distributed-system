@@ -59,7 +59,7 @@ _scheduler_jobs_list () {
 ### Look at scheduler state for registered jobs and return them
 _scheduler_jobs () {
     if    [ $# -gt 0 ] ; then
-        PARENT_CMD="_scheduler_jobs" __run_subcommand "$@"
+        PARENT_CMD="_scheduler_jobs" _f_run_subcommand "$@"
     else
         _scheduler_jobs_list "$@"
     fi
