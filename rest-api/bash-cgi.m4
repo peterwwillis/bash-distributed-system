@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+# vim: syntax=bash
 DEFAULT_CONTENT_TYPE="text/plain"
 
 # Credit for parts of this code goes to:

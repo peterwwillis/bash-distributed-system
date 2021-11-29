@@ -11,22 +11,20 @@ LIBDIR ?= $(EXEC_PREFIX)/lib
 
 # The prefix added to the installed programs
 BINPREFIX ?= shds-
-
 # The directory where the 'functions/' library will be installed
 FUNCTIONSDIR=$(LIBDIR)/shds/functions
-
 # The directory where the cgi-bin apps will be installed
-CGIBINDIR=$(LIBDIR)/shds/cgi-bin
+RESTAPIDIR=$(LIBDIR)/shds/rest-api
 
 BIN_STATE ?= $(BINPREFIX)state
 BIN_PROCESSOR ?= $(BINPREFIX)processor
 BIN_SCHEDULER ?= $(BINPREFIX)scheduler
 
-# Last thing's first
-M4_ARGS := -D_PREFIX_=$(PREFIX) -D_EXEC_PREFIX=$(EXEC_PREFIX) -D_BINDIR_=$(BINDIR) \
-    -D_LIBDIR_=$(LIBDIR) -D_FUNCTIONSDIR_=$(FUNCTIONSDIR) -D_BINPREFIX_=$(BINPREFIX) \
-    -D_BIN_STATE_=$(BIN_STATE) -D_BIN_PROCESSOR_=$(BIN_PROCESSOR) \
-    -D_BIN_SCHEDULER_=$(BIN_SCHEDULER)
+# Macros for m4 to replace in scripts
+M4_ARGS := -D_PREFIX_=$(PREFIX) -D_EXEC_PREFIX=$(EXEC_PREFIX) \
+    -D_BINDIR_=$(BINDIR) -D_LIBDIR_=$(LIBDIR) -D_FUNCTIONSDIR_=$(FUNCTIONSDIR) -D_RESTAPIDIR_=$(RESTAPIDIR) \
+    -D_BINPREFIX_=$(BINPREFIX) \
+    -D_BIN_STATE_=$(BIN_STATE) -D_BIN_PROCESSOR_=$(BIN_PROCESSOR) -D_BIN_SCHEDULER_=$(BIN_SCHEDULER)
 
 PATH := $(PATH):$(DESTDIR)$(BINDIR)
 export PATH
@@ -47,7 +45,7 @@ clean-default:
 	set -ex; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i clean ; done ; fi
 
 lint-default: $(PROGRAMS)
-	for i in $(PROGRAMS) ; do shellcheck $$i ; done
+	set -ex; for i in $(PROGRAMS) ; do shellcheck -x $$i ; done
 	set -ex; if [ -n "$(SUBDIRS)" ] ; then for i in $(SUBDIRS) ; do make -C $$i lint ; done ; fi
 
 clean-install-default:

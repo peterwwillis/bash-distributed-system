@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
+# vim: syntax=bash
 set -eu
 DEBUG=1
 [ "${DEBUG:-0}" = "1" ] && set -x
 
+# CGI variables:
+#   - SCRIPT_NAME
+#   - PATH_INFO
 PROGRAM="$( basename "$SCRIPT_NAME" | tr -C -d 'a-zA-Z0-9_-' )" # sanitize CGI var
-BACKEND_PATH="../../../backend/$PROGRAM.sh"
-content_type="text/plain"
+BACKEND="_BINPREFIX_$PROGRAM"
 
 # Load CGI variables and functions
-. "./bash.cgi"
+. "_RESTAPIDIR_/bash-cgi.sh"
 declare -A cgi_get cgi_post
 __cgi_getvars
 

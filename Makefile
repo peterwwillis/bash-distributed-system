@@ -15,7 +15,7 @@ PREFIX ?= $(shell pwd)/_install/usr
 # Pass the above variables along to the rest of the Make processes
 export
 
-SUBDIRS = backend functions
+SUBDIRS = backend functions rest-api
 
 all: build-default
 

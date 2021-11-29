@@ -69,12 +69,11 @@ _scheduler_jobs () {
 _scheduler_poll_queue () {
     false
     # TODO: finish this function
-    while read -r newjob ; do
-        # Create a lock on the new job by renaming it
-        curstate="$(__state lock "$PROGRAM" queue "$newjob")"
-
-    done < <(__state list "$PROGRAM" queue)
-    false
+    #while read -r newjob ; do
+    #    # Create a lock on the new job by renaming it
+    #    curstate="$(__state lock "$PROGRAM" queue "$newjob")"
+    #
+    #done < <(__state list "$PROGRAM" queue)
 }
 
 ### List the nodes. Note the ones that are currently available to run a job.

@@ -1,4 +1,6 @@
-backend/*.sh
+backend/**.sh
 functions/**.sh
 functions/**/**.sh
+rest-api/**.sh
+rest-api/**/**.sh
 _install/
