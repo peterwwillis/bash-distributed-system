@@ -4,8 +4,9 @@ INSTALLDIR = $(RESTAPIDIR)
 
 include ../makefile.inc
 
-build: build-default
-test: test-default
 clean: clean-default
 clean-install: clean-install-default
+build: build-default
+lint: lint-default
+test: test-default
 install: install-default

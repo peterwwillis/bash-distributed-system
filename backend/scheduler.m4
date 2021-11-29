@@ -11,7 +11,7 @@ __generic_request_add () {
     local func="$1" statename="$2" statepostfix="$3"
     local id
     if [ -z "${JSON_FILE_DATA:-}" ] ; then
-        __error "Need JSON file data for function '$func'"
+        _f_error "Need JSON file data for function '$func'"
     fi
 
     declare -A json_data

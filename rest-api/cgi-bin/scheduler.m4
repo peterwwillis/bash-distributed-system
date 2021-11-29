@@ -9,10 +9,11 @@ _cgi_scheduler_jobs_add () {
     __request_method_required "POST"
     __content_type_required "application/json"
     set +e
-    output="$($BACKEND -j - "${PATH_INFO//\// }")"
+    read -r -a path_info_args <<<"${PATH_INFO//\// }"
+    output="$($BACKEND -j - "${path_info_args[@]}" )"
     # shellcheck disable=SC2181
     if [ $? -ne 0 ] ; then
-        __httperror 400 "The backend application failed to process your request"
+        __httperror 400 "$(printf "The backend application failed to process your request:\n\n%s\n" "$output")"
     fi
     set -e
     __content_type "application/json"

@@ -68,13 +68,21 @@ __content_type () {
     printf "Content-Type: $content_type\n"
 }
 __httpstatus () {
-    local error_code="$1" error_msg="$2"
+    local error_code="$1" error_msg="${2:-}"
+    declare -A status_response=( [100]="Continue" 
+        [200]="OK" [206]="Partial Content" [302]="Moved Permanently"
+        [304]="Not Modified" [400]="Bad Request" [401]="Unauthorized"
+        [403]="Forbidden" [404]="Not Found" [408]="Request Timed Out"
+        [413]="Entity Too Large" [418]="I'm a teapot" [500]="Internal Server Error"
+        [501]="Not Implemented"
+    )
     # shellcheck disable=SC2059
-    printf "Status: $error_code $error_msg\n"
+    [ -z "${error_msg:-}" ] && error_msg="${status_response[$error_code]}"
+    printf "Status: %i %s\n" "$error_code" "$error_msg"
 }
 __httperror () {
     local error_code="$1" error_msg="$2"
-    __httpstatus "$error_code" "$error_msg"
+    __httpstatus "$error_code"
     # shellcheck disable=SC2119
     __content_type
     printf "\n"

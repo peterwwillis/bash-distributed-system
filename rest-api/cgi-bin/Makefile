@@ -4,9 +4,10 @@ INSTALLDIR = $(RESTAPIDIR)/cgi-bin
 
 include ../../makefile.inc
 
-build: build-default
-test: test-default
 clean: clean-default
+build: build-default
+lint: lint-default
+test: test-default
 
 # Programs are installed to the cgi-bin dir without a BINPREFIX or .sh extension
 clean-install:

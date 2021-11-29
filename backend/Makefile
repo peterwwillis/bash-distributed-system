@@ -10,6 +10,7 @@ clean-install:
 		rm -f "$(DESTDIR)$(BINDIR)/$(BINPREFIX)$$progname" ; \
 	done
 build: build-default
+lint: lint-default
 test: test-default
 	make -C tests test
 install:
